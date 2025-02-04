@@ -42,8 +42,28 @@ namespace Leaderboard.Services;
 
 public class LeaderboardCalculator : ILeaderboardCalculator
 {
-    public IReadOnlyList<UserWithPlace> CalculatePlaces(IReadOnlyList<IUserWithScore> usersWithScores, LeaderboardMinScores leaderboardMinScores)
+    public IReadOnlyList<UserWithPlace> CalculatePlaces(IReadOnlyList<IUserWithScore> usersWithScores,
+        LeaderboardMinScores leaderboardMinScores)
     {
-       return ArraySegment<UserWithPlace>.Empty;
+        var orderedUsers = usersWithScores.OrderByDescending(uws => uws.Score);
+        var result = orderedUsers.Select((uws, index) =>
+            new UserWithPlace(uws.UserId, GetPlace(uws.Score, index, leaderboardMinScores))).ToArray();
+
+        return new ArraySegment<UserWithPlace>(result);
+    }
+
+    private int GetPlace(int score, int index, LeaderboardMinScores leaderboardMinScores)
+    {
+        var result = score switch
+        {
+            _ when score >= leaderboardMinScores.FirstPlaceMinScore => 1,
+            _ when score >= leaderboardMinScores.SecondPlaceMinScore &&
+                   score < leaderboardMinScores.FirstPlaceMinScore => 2,
+            _ when score >= leaderboardMinScores.ThirdPlaceMinScore &&
+                   score < leaderboardMinScores.SecondPlaceMinScore => 3,
+            _ => index + 4 //zero-based index
+        };
+
+        return result; //I like to keep the result separate from the return statement for more easy debugging 
     }
 }
