@@ -8,12 +8,6 @@ public class LeaderboardMinScores
 
     public LeaderboardMinScores(int firstPlaceMinScore, int secondPlaceMinScore, int thirdPlaceMinScore)
     {
-        if (firstPlaceMinScore < secondPlaceMinScore || 
-            secondPlaceMinScore < thirdPlaceMinScore ||
-            thirdPlaceMinScore < 0)
-            throw new ArgumentException(
-                "Params should match the condition: FirstPlaceMinScore > SecondPlaceMinScore > ThirdPlaceMinScore > 0");
-        
         FirstPlaceMinScore = firstPlaceMinScore;
         SecondPlaceMinScore = secondPlaceMinScore;
         ThirdPlaceMinScore = thirdPlaceMinScore;
