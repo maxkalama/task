@@ -46,13 +46,27 @@ public class LeaderboardCalculator : ILeaderboardCalculator
         LeaderboardMinScores leaderboardMinScores)
     {
         var orderedUsers = usersWithScores.OrderByDescending(uws => uws.Score);
-        var result = orderedUsers.Select((uws, index) =>
-            new UserWithPlace(uws.UserId, GetPlace(uws.Score, index, leaderboardMinScores))).ToArray();
+        
+        var takenTopPlacesCount = 0;
+
+        var result = orderedUsers.Select((userWithScore, index) =>
+            GetUserWithPlace(leaderboardMinScores, userWithScore, index, ref takenTopPlacesCount)).ToArray();
 
         return new ArraySegment<UserWithPlace>(result);
     }
 
-    private int GetPlace(int score, int index, LeaderboardMinScores leaderboardMinScores)
+    //I prefer to skip unnecessary comments when the method name is enough
+    private UserWithPlace GetUserWithPlace(LeaderboardMinScores leaderboardMinScores, IUserWithScore uws, int index,
+        ref int takenTopPlacesCount)
+    {
+        var place = GetPlace(uws.Score, index, leaderboardMinScores, ref takenTopPlacesCount);
+
+        if (place < 4) takenTopPlacesCount++;
+        
+        return new UserWithPlace(uws.UserId, place);
+    }
+
+    private int GetPlace(int score, int index, LeaderboardMinScores leaderboardMinScores, ref int takenTopPlacesCount)
     {
         var result = score switch
         {
@@ -61,7 +75,7 @@ public class LeaderboardCalculator : ILeaderboardCalculator
                    score < leaderboardMinScores.FirstPlaceMinScore => 2,
             _ when score >= leaderboardMinScores.ThirdPlaceMinScore &&
                    score < leaderboardMinScores.SecondPlaceMinScore => 3,
-            _ => index + 4 //zero-based index
+            _ => index + 4 - takenTopPlacesCount //zero-based index
         };
 
         return result; //I like to keep the result separate from the return statement for more easy debugging 
